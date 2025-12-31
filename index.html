@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dropdown Prompt Generator</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 24px; max-width: 980px; }
+    h1 { margin: 0 0 6px; }
+    .sub { opacity:.75; margin: 0 0 18px; }
+    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    label { font-size: 12px; opacity: .8; display:block; margin-bottom: 6px; }
+    select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 12px; }
+    .btnrow { display:flex; gap:10px; flex-wrap: wrap; margin: 14px 0; }
+    button { padding: 10px 14px; border: 0; border-radius: 12px; cursor: pointer; }
+    button.primary { font-weight: 600; }
+    .out { white-space: pre-wrap; background: #f7f7f7; padding: 14px; border-radius: 14px; border:1px solid #eee; }
+    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#eee; font-size: 12px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Image Prompt Generator</h1>
+  <p class="sub">Dropdown-based prompt builder for semi-realistic chibi / Afro-Glam sticker packs.</p>
+  <div class="pill">Tip: pick dropdowns → click Generate → Copy</div>
+
+  <div class="grid">
+    <div>
+      <label>Characters</label>
+      <select id="count">
+        <option value="1">1 character</option>
+        <option value="2">2 characters</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Style</label>
+      <select id="style">
+        <option value="afroglam">Afro-Glam (vibrant + glossy)</option>
+        <option value="semi">Semi-realistic chibi (soft gloss)</option>
+        <option value="sticker">Sticker pack (white outline)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Ethnicity</label>
+      <select id="ethnicity">
+        <option>African-American</option>
+        <option>Ethiopian</option>
+        <option>Jamaican</option>
+        <option>Nigerian</option>
+        <option>Ghanaian</option>
+        <option>Mixed Black</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Gender</label>
+      <select id="gender">
+        <option>girl</option>
+        <option>boy</option>
+        <option>woman</option>
+        <option>man</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Age</label>
+      <select id="age">
+        <option>teenager</option>
+        <option>20-30 years old</option>
+        <option>child</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Body type</label>
+      <select id="body">
+        <option>slim</option>
+        <option>athletic</option>
+        <option>curvy</option>
+        <option>plus-size curvy</option>
+        <option>petite slim</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Hair</label>
+      <select id="hair">
+        <option>curly hair (black)</option>
+        <option>afro puffs (dark brown)</option>
+        <option>box braids (purple)</option>
+        <option>knotless braids (burgundy)</option>
+        <option>passion twists (honey brown)</option>
+        <option>bob cut (blonde)</option>
+        <option>pixie cut (black)</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Eye color</label>
+      <select id="eyes">
+        <option>brown eyes</option>
+        <option>grey eyes</option>
+        <option>light brown eyes</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Outfit (top)</label>
+      <select id="top">
+        <option>hoodie</option>
+        <option>black shirt</option>
+        <option>tank top</option>
+        <option>denim jacket</option>
+        <option>school uniform blazer</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Outfit (bottom)</label>
+      <select id="bottom">
+        <option>blue jeans</option>
+        <option>shorts</option>
+        <option>cargo pants</option>
+        <option>knee-length pleated skirt</option>
+        <option>leggings</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Shoes</label>
+      <select id="shoes">
+        <option>white sneakers</option>
+        <option>all-black Converse</option>
+        <option>Crocs</option>
+        <option>platform sneakers</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Pose / Action</label>
+      <select id="pose">
+        <option>standing, waving hello</option>
+        <option>standing, peace sign</option>
+        <option>sitting on a chair</option>
+        <option>holding a coffee</option>
+        <option>playing video games on PC</option>
+        <option>arms crossed, serious expression</option>
+        <option>hugging a friend</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Setting</label>
+      <select id="setting">
+        <option>transparent background (no scene)</option>
+        <option>cozy home office</option>
+        <option>boutique interior</option>
+        <option>coffee shop</option>
+        <option>school hallway</option>
+        <option>classroom</option>
+        <option>gaming setup</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Extra traits (optional)</label>
+      <select id="extra">
+        <option value="">none</option>
+        <option>subtle glam makeup</option>
+        <option>cute vampire fangs, slightly pointed ears</option>
+        <option>headphones</option>
+        <option>holding a book</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Negative prompt (optional)</label>
+      <textarea id="negative" rows="3" placeholder="text, watermark, blurry, overly sexualized..."></textarea>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="primary" id="gen">Generate</button>
+    <button id="copy">Copy</button>
+    <button id="random">Randomize Poses</button>
+  </div>
+
+  <h3>Generated prompt</h3>
+  <div id="output" class="out"></div>
+
+<script>
+  function stylePreset(style){
+    if(style === "afroglam") return "Afro-Glam cartoon style, vibrant colors, glossy finish, semi-realistic chibi proportions (large expressive head, small body), smooth shading, clean lighting, crisp edges, high resolution.";
+    if(style === "semi") return "Semi-realistic chibi 3D toon style, soft gloss, vibrant but balanced colors, smooth shading, clean lighting, crisp edges, high resolution.";
+    return "Sticker-ready semi-realistic chibi 3D toon style, thick white outline, vibrant colors, glossy finish, centered composition, clean lighting, crisp edges, high resolution.";
+  }
+
+  function generate(){
+    const count = document.getElementById("count").value;
+    const style = document.getElementById("style").value;
+    const ethnicity = document.getElementById("ethnicity").value;
+    const gender = document.getElementById("gender").value;
+    const age = document.getElementById("age").value;
+    const body = document.getElementById("body").value;
+    const hair = document.getElementById("hair").value;
+    const eyes = document.getElementById("eyes").value;
+    const top = document.getElementById("top").value;
+    const bottom = document.getElementById("bottom").value;
+    const shoes = document.getElementById("shoes").value;
+    const pose = document.getElementById("pose").value;
+    const setting = document.getElementById("setting").value;
+    const extra = document.getElementById("extra").value;
+    const negative = document.getElementById("negative").value.trim();
+
+    const prompt =
+`Create ${count} cute character${count==="2" ? "s" : ""}.
+
+Character: ${age} ${ethnicity} ${gender}, ${body}.
+Appearance: ${hair}, ${eyes}.
+Outfit: ${top} + ${bottom} + ${shoes}.
+Pose/Action: ${pose}.
+Setting: ${setting}.
+${extra ? "Extra: " + extra + "." : ""}
+
+Style: ${stylePreset(style)}
+Full body.
+
+Negative prompt: ${negative || "photorealistic, anime, blurry, grainy, dark lighting, text, watermark, logo, cluttered background, overly sexualized, adult/explicit content."}`;
+
+    document.getElementById("output").textContent = prompt;
+  }
+
+  document.getElementById("gen").addEventListener("click", generate);
+
+  document.getElementById("copy").addEventListener("click", async () => {
+    const text = document.getElementById("output").textContent;
+    if(!text) return;
+    await navigator.clipboard.writeText(text);
+    alert("Copied!");
+  });
+
+  document.getElementById("random").addEventListener("click", () => {
+    const poseEl = document.getElementById("pose");
+    const options = [...poseEl.options];
+    poseEl.value = options[Math.floor(Math.random() * options.length)].value;
+  });
+
+  // Auto-generate on load:
+  generate();
+</script>
+</body>
+</html>
