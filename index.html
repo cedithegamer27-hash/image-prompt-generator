@@ -3,251 +3,916 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Dropdown Prompt Generator</title>
+  <title>Diverse Image Prompt Creator</title>
   <style>
-    body { font-family: system-ui, Arial; margin: 24px; max-width: 980px; }
+    :root { --b:#e6e6e6; --bg:#ffffff; --mut:#6b6b6b; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: var(--bg); margin: 24px; max-width: 1100px; }
     h1 { margin: 0 0 6px; }
-    .sub { opacity:.75; margin: 0 0 18px; }
-    .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-    label { font-size: 12px; opacity: .8; display:block; margin-bottom: 6px; }
-    select, input, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 12px; }
-    .btnrow { display:flex; gap:10px; flex-wrap: wrap; margin: 14px 0; }
-    button { padding: 10px 14px; border: 0; border-radius: 12px; cursor: pointer; }
-    button.primary { font-weight: 600; }
-    .out { white-space: pre-wrap; background: #f7f7f7; padding: 14px; border-radius: 14px; border:1px solid #eee; }
-    .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; background:#eee; font-size: 12px; margin-bottom: 10px; }
+    .sub { margin: 0 0 18px; color: var(--mut); }
+    .topbar { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin: 14px 0 18px; }
+    button { padding: 10px 14px; border: 1px solid var(--b); border-radius: 12px; cursor: pointer; background:#fff; }
+    button.primary { font-weight: 700; }
+    .grid { display:grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .card { border:1px solid var(--b); border-radius: 16px; padding: 14px; }
+    .card h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: .2px; }
+    label { display:block; font-size: 12px; color: var(--mut); margin: 10px 0 6px; }
+    select, input, textarea { width:100%; padding: 10px; border:1px solid var(--b); border-radius: 12px; }
+    textarea { resize: vertical; min-height: 72px; }
+    .row { display:grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+    .row3 { display:grid; gap: 10px; grid-template-columns: 1fr 1fr 1fr; }
+    .lockrow { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .lock { display:flex; align-items:center; gap:6px; font-size: 12px; color: var(--mut); user-select:none; }
+    .pill { display:inline-block; padding:4px 10px; border-radius: 999px; border:1px solid var(--b); font-size: 12px; color: var(--mut); }
+    details { border:1px dashed var(--b); border-radius: 14px; padding: 10px 12px; }
+    details summary { cursor:pointer; font-weight: 650; color:#111; }
+    .outwrap { margin-top: 16px; display:grid; gap:12px; grid-template-columns: 1fr; }
+    .out { white-space: pre-wrap; background:#f7f7f7; border:1px solid var(--b); border-radius: 16px; padding: 14px; }
+    .small { font-size: 12px; color: var(--mut); margin-top: 8px; }
+    .hint { font-size: 12px; color: var(--mut); margin: 6px 0 0; }
   </style>
 </head>
 <body>
-  <h1>Image Prompt Generator</h1>
-  <p class="sub">Dropdown-based prompt builder for semi-realistic chibi / Afro-Glam sticker packs.</p>
-  <div class="pill">Tip: pick dropdowns → click Generate → Copy</div>
+  <h1>Diverse Image Prompt Creator</h1>
+  <p class="sub">Dropdown-based generator for characters (cartoon, chibi, anime, semi-realistic), including diversity, outfits, settings, lighting, and supernatural layers.</p>
+
+  <div class="topbar">
+    <button class="primary" id="generateBtn">Generate Prompt</button>
+    <button id="copyBtn">Copy</button>
+    <button id="nextPoseBtn">Next Pose</button>
+
+    <label style="display:flex; align-items:center; gap:8px; margin:0;">
+      <span class="pill">Randomize</span>
+      <select id="randomMode" style="width:220px;">
+        <option value="all">All (unlocked)</option>
+        <option value="character">Character only</option>
+        <option value="outfit">Outfit only</option>
+        <option value="pose">Pose only</option>
+        <option value="bg">Background only</option>
+      </select>
+    </label>
+    <button id="randomBtn">Go</button>
+
+    <label style="display:flex; align-items:center; gap:8px; margin:0;">
+      <span class="pill">Advanced</span>
+      <select id="advancedMode" style="width:170px;">
+        <option value="off">Off</option>
+        <option value="on">On</option>
+      </select>
+    </label>
+    <button id="resetBtn">Reset Defaults</button>
+  </div>
 
   <div class="grid">
-    <div>
-      <label>Characters</label>
-      <select id="count">
-        <option value="1">1 character</option>
-        <option value="2">2 characters</option>
-      </select>
-    </div>
 
-    <div>
-      <label>Style</label>
-      <select id="style">
-        <option value="afroglam">Afro-Glam (vibrant + glossy)</option>
-        <option value="semi">Semi-realistic chibi (soft gloss)</option>
-        <option value="sticker">Sticker pack (white outline)</option>
-      </select>
-    </div>
+    <!-- CHARACTER CORE -->
+    <section class="card">
+      <h2>Character Core</h2>
 
-    <div>
-      <label>Ethnicity</label>
-      <select id="ethnicity">
-        <option>African-American</option>
-        <option>Ethiopian</option>
-        <option>Jamaican</option>
-        <option>Nigerian</option>
-        <option>Ghanaian</option>
-        <option>Mixed Black</option>
-      </select>
-    </div>
-
-    <div>
-      <label>Gender</label>
-      <select id="gender">
-        <option>girl</option>
-        <option>boy</option>
-        <option>woman</option>
-        <option>man</option>
-      </select>
-    </div>
-
-    <div>
-      <label>Age</label>
+      <div class="lockrow">
+        <label style="margin:0;">Age (Life Stage)</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="age"> Lock</label>
+      </div>
       <select id="age">
-        <option>teenager</option>
-        <option>20-30 years old</option>
-        <option>child</option>
+        <option>Child</option>
+        <option>Teenager</option>
+        <option>Young Adult</option>
+        <option>Mature Adult</option>
+        <option>Elder</option>
       </select>
-    </div>
 
-    <div>
-      <label>Body type</label>
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Gender</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="gender"> Lock</label>
+      </div>
+      <select id="gender">
+        <option>Boy</option>
+        <option>Girl</option>
+        <option>Man</option>
+        <option>Woman</option>
+        <option>Nonbinary</option>
+      </select>
+
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Body Type</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="body"> Lock</label>
+      </div>
       <select id="body">
-        <option>slim</option>
-        <option>athletic</option>
-        <option>curvy</option>
-        <option>plus-size curvy</option>
-        <option>petite slim</option>
+        <option>Slim</option>
+        <option>Athletic</option>
+        <option>Average</option>
+        <option>Curvy</option>
+        <option>Plus-size</option>
+        <option>Stocky</option>
       </select>
-    </div>
 
-    <div>
-      <label>Hair</label>
-      <select id="hair">
-        <option>curly hair (black)</option>
-        <option>afro puffs (dark brown)</option>
-        <option>box braids (purple)</option>
-        <option>knotless braids (burgundy)</option>
-        <option>passion twists (honey brown)</option>
-        <option>bob cut (blonde)</option>
-        <option>pixie cut (black)</option>
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Primary Ethnicity / Background</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="eth1"> Lock</label>
+      </div>
+      <select id="eth1"></select>
+
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Secondary Ethnicity (optional)</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="eth2"> Lock</label>
+      </div>
+      <select id="eth2"></select>
+
+      <label class="hint">Adults (Young Adult, Mature Adult, Elder) are intended to be unrestricted. Child/Teen can be guided later via filtering.</label>
+    </section>
+
+    <!-- HAIR -->
+    <section class="card">
+      <h2>Hair</h2>
+
+      <div class="lockrow">
+        <label style="margin:0;">Hair Texture</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="hairTexture"> Lock</label>
+      </div>
+      <select id="hairTexture">
+        <option>Straight</option>
+        <option>Wavy</option>
+        <option>Curly</option>
+        <option>Coily</option>
+        <option>Kinky</option>
+        <option>Braided</option>
+        <option>Twisted</option>
+        <option>Loc’d</option>
       </select>
-    </div>
 
-    <div>
-      <label>Eye color</label>
-      <select id="eyes">
-        <option>brown eyes</option>
-        <option>grey eyes</option>
-        <option>light brown eyes</option>
-      </select>
-    </div>
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Hair Style</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="hairStyle"> Lock</label>
+      </div>
+      <select id="hairStyle"></select>
 
-    <div>
-      <label>Outfit (top)</label>
-      <select id="top">
-        <option>hoodie</option>
-        <option>black shirt</option>
-        <option>tank top</option>
-        <option>denim jacket</option>
-        <option>school uniform blazer</option>
-      </select>
-    </div>
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Hair Color</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="hairColor"> Lock</label>
+      </div>
+      <select id="hairColor"></select>
+    </section>
 
-    <div>
-      <label>Outfit (bottom)</label>
-      <select id="bottom">
-        <option>blue jeans</option>
-        <option>shorts</option>
-        <option>cargo pants</option>
-        <option>knee-length pleated skirt</option>
-        <option>leggings</option>
-      </select>
-    </div>
+    <!-- OUTFIT -->
+    <section class="card">
+      <h2>Outfit</h2>
 
-    <div>
-      <label>Shoes</label>
-      <select id="shoes">
-        <option>white sneakers</option>
-        <option>all-black Converse</option>
-        <option>Crocs</option>
-        <option>platform sneakers</option>
-      </select>
-    </div>
+      <div class="lockrow">
+        <label style="margin:0;">Outfit Category</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="outfitCategory"> Lock</label>
+      </div>
+      <select id="outfitCategory"></select>
 
-    <div>
-      <label>Pose / Action</label>
-      <select id="pose">
-        <option>standing, waving hello</option>
-        <option>standing, peace sign</option>
-        <option>sitting on a chair</option>
-        <option>holding a coffee</option>
-        <option>playing video games on PC</option>
-        <option>arms crossed, serious expression</option>
-        <option>hugging a friend</option>
-      </select>
-    </div>
+      <div class="row">
+        <div>
+          <div class="lockrow">
+            <label style="margin:10px 0 6px;">Top</label>
+            <label class="lock"><input type="checkbox" class="lockbox" data-lock="top"> Lock</label>
+          </div>
+          <select id="top"></select>
+        </div>
+        <div>
+          <div class="lockrow">
+            <label style="margin:10px 0 6px;">Bottom</label>
+            <label class="lock"><input type="checkbox" class="lockbox" data-lock="bottom"> Lock</label>
+          </div>
+          <select id="bottom"></select>
+        </div>
+      </div>
 
-    <div>
-      <label>Setting</label>
-      <select id="setting">
-        <option>transparent background (no scene)</option>
-        <option>cozy home office</option>
-        <option>boutique interior</option>
-        <option>coffee shop</option>
-        <option>school hallway</option>
-        <option>classroom</option>
-        <option>gaming setup</option>
-      </select>
-    </div>
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Shoes</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="shoes"> Lock</label>
+      </div>
+      <select id="shoes"></select>
 
-    <div>
-      <label>Extra traits (optional)</label>
-      <select id="extra">
-        <option value="">none</option>
-        <option>subtle glam makeup</option>
-        <option>cute vampire fangs, slightly pointed ears</option>
-        <option>headphones</option>
-        <option>holding a book</option>
-      </select>
-    </div>
+      <div class="row3">
+        <div>
+          <div class="lockrow">
+            <label style="margin:10px 0 6px;">Top Color</label>
+            <label class="lock"><input type="checkbox" class="lockbox" data-lock="topColor"> Lock</label>
+          </div>
+          <select id="topColor"></select>
+        </div>
+        <div>
+          <div class="lockrow">
+            <label style="margin:10px 0 6px;">Bottom Color</label>
+            <label class="lock"><input type="checkbox" class="lockbox" data-lock="bottomColor"> Lock</label>
+          </div>
+          <select id="bottomColor"></select>
+        </div>
+        <div>
+          <div class="lockrow">
+            <label style="margin:10px 0 6px;">Shoe Color</label>
+            <label class="lock"><input type="checkbox" class="lockbox" data-lock="shoeColor"> Lock</label>
+          </div>
+          <select id="shoeColor"></select>
+        </div>
+      </div>
+    </section>
 
-    <div>
-      <label>Negative prompt (optional)</label>
-      <textarea id="negative" rows="3" placeholder="text, watermark, blurry, overly sexualized..."></textarea>
-    </div>
+    <!-- POSE -->
+    <section class="card">
+      <h2>Pose / Action</h2>
+      <div class="lockrow">
+        <label style="margin:0;">Pose / Action</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="pose"> Lock</label>
+      </div>
+      <select id="pose"></select>
+      <p class="hint">Use “Next Pose” for quick sticker iterations while keeping everything else the same.</p>
+    </section>
+
+    <!-- BACKGROUND & SETTING -->
+    <section class="card">
+      <h2>Background & Setting</h2>
+
+      <div class="lockrow">
+        <label style="margin:0;">Background Type</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="bgType"> Lock</label>
+      </div>
+      <select id="bgType"></select>
+
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Setting / Location</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="setting"> Lock</label>
+      </div>
+      <select id="setting"></select>
+    </section>
+
+    <!-- LIGHTING -->
+    <section class="card">
+      <h2>Lighting & Time</h2>
+
+      <div class="lockrow">
+        <label style="margin:0;">Time of Day</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="timeOfDay"> Lock</label>
+      </div>
+      <select id="timeOfDay"></select>
+
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Lighting Style</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="lighting"> Lock</label>
+      </div>
+      <select id="lighting"></select>
+    </section>
+
+    <!-- STYLE SYSTEM -->
+    <section class="card">
+      <h2>Style Presets</h2>
+
+      <div class="lockrow">
+        <label style="margin:0;">Primary Style</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="primaryStyle"> Lock</label>
+      </div>
+      <select id="primaryStyle"></select>
+
+      <details id="styleModsWrap" style="margin-top:10px;">
+        <summary>Style Modifiers (multi-select)</summary>
+        <label>Hold Ctrl/⌘ to select multiple</label>
+        <select id="styleMods" multiple size="9"></select>
+      </details>
+
+      <div class="lockrow">
+        <label style="margin:10px 0 6px;">Output / Use-Case</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="outputStyle"> Lock</label>
+      </div>
+      <select id="outputStyle"></select>
+    </section>
+
+    <!-- SUPERNATURAL -->
+    <section class="card">
+      <h2>Supernatural</h2>
+
+      <div class="lockrow">
+        <label style="margin:0;">Supernatural Being</label>
+        <label class="lock"><input type="checkbox" class="lockbox" data-lock="being"> Lock</label>
+      </div>
+      <select id="being"></select>
+
+      <details id="superWrap" style="margin-top:10px;">
+        <summary>Traits & Powers (multi-select)</summary>
+
+        <label>Supernatural Traits (optional, multi-select)</label>
+        <select id="traits" multiple size="8"></select>
+
+        <label>Elemental Powers (optional, multi-select)</label>
+        <select id="powers" multiple size="8"></select>
+      </details>
+    </section>
+
+    <!-- ADVANCED / NEGATIVE -->
+    <section class="card" id="advancedCard" style="display:none;">
+      <h2>Advanced</h2>
+
+      <label>Negative Prompt (optional)</label>
+      <textarea id="negative" placeholder="Example: text, watermark, logo, blurry, grainy..."></textarea>
+
+      <label class="hint">Tip: Keep it age-appropriate for child/teen characters. Adults are unrestricted by design.</label>
+    </section>
+
   </div>
 
-  <div class="btnrow">
-    <button class="primary" id="gen">Generate</button>
-    <button id="copy">Copy</button>
-    <button id="random">Randomize Poses</button>
+  <div class="outwrap">
+    <div class="card">
+      <h2>Generated Prompt</h2>
+      <div id="output" class="out"></div>
+      <div class="small" id="status"></div>
+    </div>
   </div>
-
-  <h3>Generated prompt</h3>
-  <div id="output" class="out"></div>
 
 <script>
-  function stylePreset(style){
-    if(style === "afroglam") return "Afro-Glam cartoon style, vibrant colors, glossy finish, semi-realistic chibi proportions (large expressive head, small body), smooth shading, clean lighting, crisp edges, high resolution.";
-    if(style === "semi") return "Semi-realistic chibi 3D toon style, soft gloss, vibrant but balanced colors, smooth shading, clean lighting, crisp edges, high resolution.";
-    return "Sticker-ready semi-realistic chibi 3D toon style, thick white outline, vibrant colors, glossy finish, centered composition, clean lighting, crisp edges, high resolution.";
+  // ---------- DATA ----------
+  const ETHNICITIES = [
+    "African-American","African","Caribbean","Hispanic / Latino","Japanese","Korean","Chinese","Indian",
+    "Middle Eastern","White (unspecified)","Indigenous","Pacific Islander","Multiracial","Other / Unspecified"
+  ];
+
+  const HAIR_STYLES_MASTER = [
+    // Natural / Loose
+    "Afro","Rounded afro","Tapered afro","Loose curls","Defined curls","Wash and go","Natural coils","Voluminous curls",
+    // Short Cuts
+    "Buzz cut","Low cut","Pixie cut","Short fade","Tapered cut","Caesar cut",
+    // Medium / Long Loose
+    "Shoulder-length curls","Long curly hair","Straight shoulder-length hair","Long straight hair","Layered hair",
+    // Updos & Pulled
+    "High bun","Low bun","Messy bun","Double buns","Ponytail","High ponytail","Low ponytail","Half-up half-down","Top knot",
+    // Braids
+    "Box braids","Knotless braids","Goddess braids","Tribal braids","Feed-in braids","Fulani braids","Lemonade braids","Micro braids","Jumbo braids",
+    // Twists
+    "Two-strand twists","Passion twists","Senegalese twists","Havana twists","Mini twists","Rope twists",
+    // Locs
+    "Starter locs","Short locs","Medium locs","Long locs","Freeform locs","Faux locs","Butterfly locs",
+    // Cornrows & Scalp Styles
+    "Straight-back cornrows","Curved cornrows","Zig-zag cornrows","Cornrows into bun","Cornrows into ponytail","Braided crown",
+    // Stylized / Fun
+    "Space buns","Heart-shaped braids","Star-part braids","Side-shaved style","Undercut style","Asymmetrical cut"
+  ];
+
+  const HAIR_COLORS_BASE = [
+    "Black","Soft black","Dark brown","Brown","Light brown","Chestnut brown","Honey brown","Auburn",
+    "Blonde","Dirty blonde","Gray","White"
+  ];
+
+  const HAIR_COLORS_UNUSUAL = [
+    "Neon pink","Electric blue","Galaxy purple","Midnight blue","Wine red","Silver metallic","Rose gold","Platinum",
+    "Pastel pink","Pastel purple","Mint green","Ombre","Split-dye","Two-tone","Rainbow"
+  ];
+
+  const OUTFIT_CATEGORIES_MASTER = [
+    // Everyday / Casual
+    "Casual","Everyday wear","Lounge wear","Athleisure","Streetwear",
+    // School & Youth
+    "School uniform","Casual school outfit","After-school outfit","College casual",
+    // Work & Professional
+    "Business casual","Professional / office wear","Creative professional","Work uniform",
+    // Social & Lifestyle
+    "Party outfit","Date night","Going-out outfit","Festival outfit","Vacation / resort wear",
+    // Seasonal
+    "Winter outfit","Fall outfit","Summer outfit","Spring outfit",
+    // Costume / Fantasy / Themed
+    "Fantasy outfit","Sci-fi outfit","Superhero outfit","Gothic outfit","Magical / mystical","Vampire","Witch","Royal / noble",
+    // Activity-Based
+    "Sportswear","Gym outfit","Dance outfit","Gaming / streamer outfit","Artist / creator outfit",
+    // Cultural / Traditional
+    "Traditional African attire","Traditional East Asian attire","Traditional South Asian attire","Traditional Indigenous attire","Cultural fusion outfit"
+  ];
+
+  const TOPS = [
+    "T-shirt","Graphic tee","Long-sleeve shirt","Tank top","Button-up shirt","Polo shirt",
+    "Hoodie","Pullover sweatshirt","Zip-up hoodie","Cardigan","Sweater",
+    "Blouse","Dress shirt","Blazer","Suit jacket",
+    "School uniform top","Fantasy tunic","Armor top"
+  ];
+
+  const BOTTOMS = [
+    "Jeans","Straight-leg pants","Skinny pants","Wide-leg pants","Cargo pants","Slacks",
+    "Casual shorts","Athletic shorts","Denim shorts",
+    "Knee-length skirt","Pleated skirt","Long skirt / maxi skirt",
+    "Casual dress","Formal dress","Fantasy dress","School uniform dress"
+  ];
+
+  const SHOES = [
+    "Sneakers","High-top sneakers","Slip-on shoes","Flats","Running shoes","Trainers","Crocs",
+    "Boots","Ankle boots","Platform shoes","Heels","Combat boots","Fantasy boots","Sandals"
+  ];
+
+  const OUTFIT_COLORS = [
+    // Neutrals
+    "Black","White","Gray","Charcoal","Beige","Cream","Brown",
+    // Standard
+    "Red","Blue","Green","Yellow","Orange","Purple","Pink",
+    // Soft / Muted
+    "Pastel pink","Pastel blue","Lavender","Mint green","Peach","Sage green",
+    // Deep / Rich
+    "Navy","Burgundy","Wine red","Forest green","Emerald","Plum","Teal",
+    // Special
+    "Metallic silver","Metallic gold","Rose gold","Neon","Ombre","Two-tone"
+  ];
+
+  const POSES_MASTER = [
+    // Neutral / Standing
+    "Standing, relaxed posture","Standing confidently","Arms at sides","Arms crossed","Hands on hips",
+    // Friendly / Expressive
+    "Waving hello","Peace sign","Thumbs up","Smiling warmly","Big cheerful grin",
+    // Sitting / Resting
+    "Sitting on a chair","Sitting casually","Sitting cross-legged","Leaning back, relaxed","Sitting and holding an item",
+    // Movement
+    "Walking forward","Light jog","Turning slightly","Leaning against a wall","Stretching",
+    // Activities
+    "Holding a phone","Texting","Holding a coffee","Reading a book","Using a laptop","Playing video games","Wearing headphones",
+    // Fun / Dynamic
+    "Jumping excitedly","Celebratory pose","Dancing","Laughing","Mid-motion action pose",
+    // Social / Interaction
+    "Hugging","High-five","Standing side-by-side","Leaning toward another character"
+  ];
+
+  const BG_TYPES = [
+    "Transparent background",
+    "Solid color background",
+    "Simple gradient background",
+    "Minimal illustrated background",
+    "Soft blurred background",
+    "Full environment background"
+  ];
+
+  const SETTINGS_MASTER = [
+    // Indoor – Everyday
+    "Bedroom","Living room","Kitchen","Bathroom","Home office","Gaming setup",
+    // Education
+    "Classroom","School hallway","Library","College campus","Study room",
+    // Social / Lifestyle
+    "Coffee shop","Café","Restaurant","Boutique / clothing store","Shopping mall",
+    // Work & Professional
+    "Office","Creative studio","Workshop","Retail store",
+    // Outdoor – Urban & Nature
+    "City street","Park","Playground","Backyard","Garden","Rooftop",
+    // Travel & Leisure
+    "Beach","Boardwalk","Poolside","Resort","Hotel room",
+    // Entertainment & Hobby
+    "Gaming room","Streaming setup","Arcade","Music studio","Art studio",
+    // Fantasy / Sci-Fi
+    "Fantasy castle","Magical classroom","Enchanted forest","Sci-fi city","Futuristic room","Space station",
+    // Themed / Mood-Based
+    "Gothic interior","Vampire academy","Witch’s study","Royal hall","Cyberpunk alley",
+    // Neutral / Flexible
+    "Studio backdrop","Plain interior","Abstract environment"
+  ];
+
+  const TIME_OF_DAY = ["Default","Morning","Midday","Afternoon","Evening","Night","Golden hour","Blue hour"];
+
+  const LIGHTING_STYLE = [
+    "Default",
+    "Natural daylight","Soft window light","Diffused light",
+    "Studio lighting","Softbox lighting","Ring light","Beauty lighting",
+    "Soft lighting","Dramatic lighting","High-contrast lighting","Low-key lighting","Moody lighting",
+    "Neon lighting","Backlighting","Rim lighting","Glow effect","Volumetric light",
+    "Cinematic lighting","Film-style lighting","Spotlight effect"
+  ];
+
+  const PRIMARY_STYLES = [
+    "Semi-Realistic",
+    "Semi-Realistic Chibi",
+    "Chibi",
+    "3D Stylized Render",
+    "3D Toon",
+    "Cartoon Stylized",
+    "Digital Illustration",
+    "Anime Style",
+    "Manga Illustration Style",
+    "Anime-Inspired 3D Style"
+  ];
+
+  const STYLE_MODIFIERS = [
+    // Line & Shape
+    "Clean line art","Bold outlines","No outline","Soft rounded shapes","Sharp angular shapes",
+    // Shading & Color
+    "Cell shading","Soft gradient shading","Painterly shading","Flat colors","High-contrast shading","Limited color palette",
+    // Finish & Texture
+    "Glossy finish","Matte finish","Vinyl / sticker finish","Clay / toy finish","Paper texture",
+    // Proportions
+    "Chibi proportions","Super-deformed (SD) proportions","Doll-like proportions",
+    // Aesthetic / Mood
+    "Soft pastel aesthetic","Bold & vibrant colors","Dark & moody aesthetic","Cozy aesthetic",
+    // Anime specifics (as modifiers too)
+    "Anime cell shading","Anime soft shading","Manga linework"
+  ];
+
+  const OUTPUT_STYLES = [
+    "Full-body character focus",
+    "Character portrait",
+    "Sticker style (white outline, transparent background)",
+    "Die-cut sticker style",
+    "Vinyl sticker style",
+    "Emoji / emote style",
+    "Icon style",
+    "Character sheet",
+    "Concept art"
+  ];
+
+  const BEINGS = [
+    "Human",
+    // Classic
+    "Vampire","Werewolf","Witch","Wizard","Warlock","Ghost","Demon","Angel","Fallen angel",
+    // Mythical
+    "Fairy","Elf","Dark elf","Mermaid / Merman","Dragon hybrid","Faun","Nymph","Pixie",
+    // Hybrids/Other
+    "Half-vampire","Half-demon","Half-angel","Shapeshifter","Hybrid supernatural",
+    "Spirit","Shadow being","Undead","Cursed being","Immortal being","Celestial being",
+    // Sci-fantasy
+    "Android","Cyborg","AI humanoid","Alien","Alien hybrid"
+  ];
+
+  const TRAITS = [
+    // Physical
+    "Fangs","Claws","Sharp teeth","Horns","Tail","Scales","Pointed ears","Elongated nails",
+    // Eyes
+    "Glowing eyes","Red eyes","Golden eyes","White / pale eyes","Slit pupils","Multiple pupils","Dark sclera",
+    // Additions
+    "Wings","Angel wings","Demon wings","Fairy wings","Halo","Floating posture","Shadow form","Aura silhouette",
+    // Aura
+    "Glowing aura","Dark aura","Magical aura","Elemental aura","Light particles","Shadow mist","Smoke effect",
+    // Magic FX
+    "Levitation","Telekinesis effect","Spell circle","Magical symbols","Runes","Energy trails",
+    // Undead indicators
+    "Pale skin effect","Ethereal transparency","Cracked skin (stylized)","Shadow veins","Ancient markings",
+    // Subtle
+    "Subtle glow","Faint aura","Minimal fangs","Soft magical shimmer","Hidden wings (folded / implied)"
+  ];
+
+  const POWERS = [
+    // Classic
+    "Fire","Water","Air / Wind","Earth",
+    // Energy
+    "Lightning","Electricity","Light","Darkness / Shadow","Energy manipulation",
+    // Ice & Nature
+    "Ice","Snow","Frost","Nature / Plant control","Vine manipulation",
+    // Advanced
+    "Lava / Magma","Metal manipulation","Crystal","Sand","Ash",
+    // Cosmic
+    "Void","Cosmic energy","Celestial light","Astral energy","Chaos energy",
+    // Psychic
+    "Telepathy","Telekinesis","Mind control","Illusion","Dream manipulation",
+    // Occult
+    "Blood magic","Soul energy","Necromancy","Curse magic","Shadow flames",
+    // Visual-only
+    "Elemental glow","Floating particles","Energy aura","Symbolic element effects","Minimal elemental shimmer"
+  ];
+
+  // ---------- HELPERS ----------
+  const $ = (id) => document.getElementById(id);
+
+  function fillSelect(sel, arr, {includeNone=false, noneLabel="None"} = {}) {
+    sel.innerHTML = "";
+    if (includeNone) {
+      const opt = document.createElement("option");
+      opt.value = noneLabel;
+      opt.textContent = noneLabel;
+      sel.appendChild(opt);
+    }
+    arr.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      sel.appendChild(opt);
+    });
   }
 
-  function generate(){
-    const count = document.getElementById("count").value;
-    const style = document.getElementById("style").value;
-    const ethnicity = document.getElementById("ethnicity").value;
-    const gender = document.getElementById("gender").value;
-    const age = document.getElementById("age").value;
-    const body = document.getElementById("body").value;
-    const hair = document.getElementById("hair").value;
-    const eyes = document.getElementById("eyes").value;
-    const top = document.getElementById("top").value;
-    const bottom = document.getElementById("bottom").value;
-    const shoes = document.getElementById("shoes").value;
-    const pose = document.getElementById("pose").value;
-    const setting = document.getElementById("setting").value;
-    const extra = document.getElementById("extra").value;
-    const negative = document.getElementById("negative").value.trim();
-
-    const prompt =
-`Create ${count} cute character${count==="2" ? "s" : ""}.
-
-Character: ${age} ${ethnicity} ${gender}, ${body}.
-Appearance: ${hair}, ${eyes}.
-Outfit: ${top} + ${bottom} + ${shoes}.
-Pose/Action: ${pose}.
-Setting: ${setting}.
-${extra ? "Extra: " + extra + "." : ""}
-
-Style: ${stylePreset(style)}
-Full body.
-
-Negative prompt: ${negative || "photorealistic, anime, blurry, grainy, dark lighting, text, watermark, logo, cluttered background, overly sexualized, adult/explicit content."}`;
-
-    document.getElementById("output").textContent = prompt;
+  function fillMultiSelect(sel, arr) {
+    sel.innerHTML = "";
+    arr.forEach(v => {
+      const opt = document.createElement("option");
+      opt.value = v;
+      opt.textContent = v;
+      sel.appendChild(opt);
+    });
   }
 
-  document.getElementById("gen").addEventListener("click", generate);
+  function selectedMulti(sel) {
+    return Array.from(sel.selectedOptions).map(o => o.value);
+  }
 
-  document.getElementById("copy").addEventListener("click", async () => {
-    const text = document.getElementById("output").textContent;
-    if(!text) return;
+  function isLocked(key) {
+    const box = document.querySelector(`.lockbox[data-lock="${key}"]`);
+    return box ? box.checked : false;
+  }
+
+  function pickRandomFromSelect(sel) {
+    const opts = Array.from(sel.options);
+    const idx = Math.floor(Math.random() * opts.length);
+    sel.value = opts[idx].value;
+  }
+
+  function randomizeMultiSelect(sel) {
+    // Choose 0-3 random options
+    const opts = Array.from(sel.options);
+    sel.selectedIndex = -1;
+    const count = Math.floor(Math.random() * 4); // 0..3
+    const chosen = new Set();
+    while (chosen.size < count && chosen.size < opts.length) {
+      chosen.add(Math.floor(Math.random() * opts.length));
+    }
+    chosen.forEach(i => opts[i].selected = true);
+  }
+
+  function titleCaseLifeStage(age) {
+    // Prompts sound nicer with: "Teenage" not "Teenager"
+    if (age === "Teenager") return "Teenage";
+    return age;
+  }
+
+  function buildPrompt() {
+    const age = $("age").value;
+    const gender = $("gender").value;
+    const body = $("body").value;
+
+    const eth1 = $("eth1").value;
+    const eth2 = $("eth2").value;
+
+    const hairTexture = $("hairTexture").value;
+    const hairStyle = $("hairStyle").value;
+    const hairColor = $("hairColor").value;
+
+    const outfitCategory = $("outfitCategory").value;
+    const top = $("top").value;
+    const bottom = $("bottom").value;
+    const shoes = $("shoes").value;
+
+    const topColor = $("topColor").value;
+    const bottomColor = $("bottomColor").value;
+    const shoeColor = $("shoeColor").value;
+
+    const pose = $("pose").value;
+
+    const bgType = $("bgType").value;
+    const setting = $("setting").value;
+
+    const timeOfDay = $("timeOfDay").value;
+    const lighting = $("lighting").value;
+
+    const primaryStyle = $("primaryStyle").value;
+    const styleMods = selectedMulti($("styleMods"));
+    const outputStyle = $("outputStyle").value;
+
+    const being = $("being").value;
+    const traits = selectedMulti($("traits"));
+    const powers = selectedMulti($("powers"));
+
+    const negative = $("negative").value.trim();
+
+    // Ethnicity phrase
+    let ethnicityPhrase = eth1;
+    if (eth2 && eth2 !== "None") {
+      ethnicityPhrase = `biracial character with ${eth1} and ${eth2} background`;
+    }
+
+    // Supernatural phrase
+    let beingPhrase = (being && being !== "Human") ? `${being.toLowerCase()} ` : "";
+    // e.g. "vampire girl"
+    const lifeStage = titleCaseLifeStage(age);
+
+    // Hair phrase (avoid awkward repeats)
+    const hairPhrase = `${hairTexture.toLowerCase()} hair styled in ${hairStyle.toLowerCase()}, ${hairColor.toLowerCase()} color`;
+
+    // Outfit phrase
+    const outfitPhrase =
+      `${topColor.toLowerCase()} ${top.toLowerCase()}, ` +
+      `${bottomColor.toLowerCase()} ${bottom.toLowerCase()}, ` +
+      `${shoeColor.toLowerCase()} ${shoes.toLowerCase()} ` +
+      `(outfit category: ${outfitCategory})`;
+
+    // Background/setting + lighting
+    let envBits = [];
+    if (bgType) envBits.push(bgType.toLowerCase());
+    if (setting) envBits.push(`set in ${setting.toLowerCase()}`);
+    if (timeOfDay && timeOfDay !== "Default") envBits.push(`${timeOfDay.toLowerCase()} time of day`);
+    if (lighting && lighting !== "Default") envBits.push(`${lighting.toLowerCase()}`);
+
+    const envPhrase = envBits.length ? envBits.join(", ") : "";
+
+    // Style phrase
+    let styleBits = [];
+    if (primaryStyle) styleBits.push(primaryStyle);
+    if (styleMods.length) styleBits.push(styleMods.join(", "));
+    if (outputStyle) styleBits.push(outputStyle);
+    // Add "sticker-ready" hint automatically for sticker output
+    if (outputStyle.toLowerCase().includes("sticker")) styleBits.push("sticker-ready, clean edges");
+
+    const stylePhrase = styleBits.join(", ");
+
+    // Traits/powers phrase
+    let supernaturalBits = [];
+    if (traits.length) supernaturalBits.push(`traits: ${traits.join(", ")}`);
+    if (powers.length) supernaturalBits.push(`elemental powers: ${powers.join(", ")}`);
+    const superPhrase = supernaturalBits.length ? supernaturalBits.join("; ") : "";
+
+    // Compose prompt
+    const lines = [];
+    lines.push(`Create 1 character.`);
+    lines.push(`Subject: ${lifeStage} ${beingPhrase}${ethnicityPhrase} ${gender.toLowerCase()}, ${body.toLowerCase()} build.`);
+    lines.push(`Appearance: ${hairPhrase}.`);
+    lines.push(`Outfit: ${outfitPhrase}.`);
+    lines.push(`Pose/Action: ${pose}.`);
+    if (envPhrase) lines.push(`Background/Setting: ${envPhrase}.`);
+    if (superPhrase) lines.push(`Supernatural details: ${superPhrase}.`);
+    lines.push(`Style: ${stylePhrase}.`);
+    lines.push(`Full body, centered composition, high resolution, clean lighting, crisp edges.`);
+
+    if (negative) {
+      lines.push(`Negative prompt: ${negative}`);
+    } else {
+      lines.push(`Negative prompt: text, watermark, logo, blurry, grainy, cluttered background, low resolution, distorted hands, extra limbs, overly sexualized.`);
+    }
+
+    return lines.join("\n");
+  }
+
+  function updateOutput() {
+    $("output").textContent = buildPrompt();
+    $("status").textContent = "Tip: Lock fields you like, then use Randomize or Next Pose for fast variations.";
+  }
+
+  // ---------- RANDOMIZE ----------
+  function randomize(mode) {
+    const advOn = $("advancedMode").value === "on";
+    // Core selectors
+    const map = {
+      age: $("age"),
+      gender: $("gender"),
+      body: $("body"),
+      eth1: $("eth1"),
+      eth2: $("eth2"),
+
+      hairTexture: $("hairTexture"),
+      hairStyle: $("hairStyle"),
+      hairColor: $("hairColor"),
+
+      outfitCategory: $("outfitCategory"),
+      top: $("top"),
+      bottom: $("bottom"),
+      shoes: $("shoes"),
+      topColor: $("topColor"),
+      bottomColor: $("bottomColor"),
+      shoeColor: $("shoeColor"),
+
+      pose: $("pose"),
+
+      bgType: $("bgType"),
+      setting: $("setting"),
+
+      timeOfDay: $("timeOfDay"),
+      lighting: $("lighting"),
+
+      primaryStyle: $("primaryStyle"),
+      outputStyle: $("outputStyle"),
+      being: $("being")
+    };
+
+    function maybeRand(key) {
+      if (isLocked(key)) return;
+      pickRandomFromSelect(map[key]);
+    }
+
+    if (mode === "all") {
+      Object.keys(map).forEach(k => maybeRand(k));
+      // multi-select random
+      if (!isLocked("traits")) randomizeMultiSelect($("traits"));
+      if (!isLocked("powers")) randomizeMultiSelect($("powers"));
+      if (!isLocked("styleMods")) randomizeMultiSelect($("styleMods"));
+    }
+
+    if (mode === "character") {
+      ["age","gender","body","eth1","eth2","hairTexture","hairStyle","hairColor","being"].forEach(maybeRand);
+      if (!isLocked("traits")) randomizeMultiSelect($("traits"));
+      if (!isLocked("powers")) randomizeMultiSelect($("powers"));
+    }
+
+    if (mode === "outfit") {
+      ["outfitCategory","top","bottom","shoes","topColor","bottomColor","shoeColor"].forEach(maybeRand);
+    }
+
+    if (mode === "pose") {
+      maybeRand("pose");
+    }
+
+    if (mode === "bg") {
+      ["bgType","setting","timeOfDay","lighting"].forEach(maybeRand);
+    }
+
+    // Hide/show advanced card
+    $("advancedCard").style.display = advOn ? "block" : "none";
+    updateOutput();
+  }
+
+  function nextPose() {
+    if (!isLocked("pose")) pickRandomFromSelect($("pose"));
+    updateOutput();
+  }
+
+  // ---------- INIT ----------
+  function init() {
+    fillSelect($("eth1"), ETHNICITIES);
+    fillSelect($("eth2"), ["None", ...ETHNICITIES]);
+
+    fillSelect($("hairStyle"), HAIR_STYLES_MASTER);
+    fillSelect($("hairColor"), [...HAIR_COLORS_BASE, ...HAIR_COLORS_UNUSUAL]);
+
+    fillSelect($("outfitCategory"), OUTFIT_CATEGORIES_MASTER);
+    fillSelect($("top"), TOPS);
+    fillSelect($("bottom"), BOTTOMS);
+    fillSelect($("shoes"), SHOES);
+
+    fillSelect($("topColor"), OUTFIT_COLORS);
+    fillSelect($("bottomColor"), OUTFIT_COLORS);
+    fillSelect($("shoeColor"), OUTFIT_COLORS);
+
+    fillSelect($("pose"), POSES_MASTER);
+
+    fillSelect($("bgType"), BG_TYPES);
+    fillSelect($("setting"), SETTINGS_MASTER);
+
+    fillSelect($("timeOfDay"), TIME_OF_DAY);
+    fillSelect($("lighting"), LIGHTING_STYLE);
+
+    fillSelect($("primaryStyle"), PRIMARY_STYLES);
+    fillMultiSelect($("styleMods"), STYLE_MODIFIERS);
+    fillSelect($("outputStyle"), OUTPUT_STYLES);
+
+    fillSelect($("being"), BEINGS);
+    fillMultiSelect($("traits"), TRAITS);
+    fillMultiSelect($("powers"), POWERS);
+
+    // Defaults
+    $("age").value = "Young Adult";
+    $("gender").value = "Woman";
+    $("body").value = "Average";
+    $("eth1").value = "African-American";
+    $("eth2").value = "None";
+
+    $("hairTexture").value = "Curly";
+    $("hairStyle").value = "Defined curls";
+    $("hairColor").value = "Dark brown";
+
+    $("outfitCategory").value = "Casual";
+    $("top").value = "Hoodie";
+    $("bottom").value = "Jeans";
+    $("shoes").value = "Sneakers";
+
+    $("topColor").value = "Black";
+    $("bottomColor").value = "Blue";
+    $("shoeColor").value = "White";
+
+    $("pose").value = "Standing confidently";
+    $("bgType").value = "Transparent background";
+    $("setting").value = "Studio backdrop";
+
+    $("timeOfDay").value = "Default";
+    $("lighting").value = "Default";
+
+    $("primaryStyle").value = "Semi-Realistic Chibi";
+    $("outputStyle").value = "Sticker style (white outline, transparent background)";
+    $("being").value = "Human";
+
+    $("advancedCard").style.display = "none";
+    updateOutput();
+  }
+
+  // ---------- EVENTS ----------
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.id === "advancedMode") {
+      $("advancedCard").style.display = (e.target.value === "on") ? "block" : "none";
+    }
+    updateOutput();
+  });
+
+  $("generateBtn").addEventListener("click", updateOutput);
+
+  $("copyBtn").addEventListener("click", async () => {
+    const text = $("output").textContent;
+    if (!text) return;
     await navigator.clipboard.writeText(text);
-    alert("Copied!");
+    $("status").textContent = "Copied ✅";
+    setTimeout(() => $("status").textContent = "Tip: Lock fields you like, then use Randomize or Next Pose for fast variations.", 1200);
   });
 
-  document.getElementById("random").addEventListener("click", () => {
-    const poseEl = document.getElementById("pose");
-    const options = [...poseEl.options];
-    poseEl.value = options[Math.floor(Math.random() * options.length)].value;
+  $("nextPoseBtn").addEventListener("click", nextPose);
+
+  $("randomBtn").addEventListener("click", () => {
+    randomize($("randomMode").value);
   });
 
-  // Auto-generate on load:
-  generate();
+  $("resetBtn").addEventListener("click", () => {
+    // clear locks
+    document.querySelectorAll(".lockbox").forEach(b => b.checked = false);
+    // clear multis
+    $("styleMods").selectedIndex = -1;
+    $("traits").selectedIndex = -1;
+    $("powers").selectedIndex = -1;
+    $("negative").value = "";
+    $("advancedMode").value = "off";
+    init();
+  });
+
+  // Initialize
+  init();
 </script>
 </body>
 </html>
